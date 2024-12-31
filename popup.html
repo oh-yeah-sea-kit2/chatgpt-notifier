@@ -4,11 +4,144 @@
   <meta charset="UTF-8">
   <title>ChatGPT Notifier</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 10px; }
+    body { 
+      font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+      padding: 16px;
+      width: 320px;
+      margin: 0;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin: 0 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #10a37f;
+      color: #10a37f;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .setting-container {
+      background: #f7f7f8;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .setting-item {
+      margin: 16px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .setting-item:first-child {
+      margin-top: 0;
+    }
+
+    .setting-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-header {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #444;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    input[type="range"] {
+      flex-grow: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: #e5e5e5;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #10a37f;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    #volumeValue {
+      min-width: 48px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .footer {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <h1>ChatGPT Notifier</h1>
-  <p>ChatGPTの通知設定を管理します。</p>
+  <h1>
+    <img src="images/icon128.png" alt="icon" class="icon">
+    ChatGPT Notifier
+  </h1>
+
+  <div class="setting-container">
+    <div class="setting-item">
+      <div class="setting-header">通知設定</div>
+      <label>
+        <input type="checkbox" id="enableNotification">
+        デスクトップ通知を表示
+      </label>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-header">サウンド設定</div>
+      <label>
+        <input type="checkbox" id="enableSound">
+        通知音を再生
+      </label>
+      <div class="volume-control">
+        <input type="range" id="volume" min="0" max="100" value="70">
+        <span id="volumeValue">70%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Version 1.0 - ChatGPTの応答を監視して通知します
+  </div>
+
+  <script src="dist/popup.js"></script>
 </body>
 </html>

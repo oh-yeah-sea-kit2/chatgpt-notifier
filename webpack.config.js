@@ -4,7 +4,7 @@ module.exports = {
   entry: {
     background: path.join(__dirname, "src/background.js"),
     content: path.join(__dirname, "src/content.js"),
-    // option: path.join(__dirname, "src/option.js")
+    popup: path.join(__dirname, "src/popup.js")
   },
   output: {
     path: path.resolve(__dirname, 'dist'), // 出力先ディレクトリ

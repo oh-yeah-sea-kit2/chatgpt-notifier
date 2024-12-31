@@ -113,9 +113,14 @@ export function monitorButtonStates() {
     chrome.runtime.onMessage.addListener((message) => {
       if (message.type === 'PLAY_NOTIFICATION_SOUND') {
         try {
-          const audio = new Audio(chrome.runtime.getURL('sounds/notification.wav'));
-          audio.play().catch(error => {
-            console.error('音声再生エラー:', error);
+          chrome.storage.sync.get({
+            volume: 100
+          }, (items) => {
+            const audio = new Audio(chrome.runtime.getURL('sounds/notification.wav'));
+            audio.volume = items.volume / 100; // 0.0 から 1.0 の範囲に変換
+            audio.play().catch(error => {
+              console.error('音声再生エラー:', error);
+            });
           });
         } catch (error) {
           console.error('音声初期化エラー:', error);
