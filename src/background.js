@@ -1,12 +1,12 @@
-chrome.runtime.onMessage.addListener((message) => {
-  console.log('Background: メッセージを受信:', message);
+import { logger } from './utils/logger';
+
+chrome.runtime.onMessage.addListener((message, sender) => {
+  logger.log('Background: メッセージを受信:', message);
   
   if (message.type === 'SHOW_NOTIFICATION') {
-    // デフォルト設定を変更
     chrome.storage.sync.get({
-      enableNotification: false,  // デフォルトでオフ
-      enableSound: true,         // デフォルトでオン
-      volume: 70                 // デフォルトで70%
+      enableNotification: false,
+      enableSound: true
     }, (items) => {
       if (items.enableNotification) {
         chrome.notifications.create('', {
@@ -19,14 +19,23 @@ chrome.runtime.onMessage.addListener((message) => {
       }
 
       if (items.enableSound) {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          if (tabs[0]) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-              type: 'PLAY_NOTIFICATION_SOUND'
-            });
-          }
+        // 通知を発生させたタブにのみ音声再生メッセージを送信
+        chrome.tabs.sendMessage(sender.tab.id, {
+          type: 'PLAY_NOTIFICATION_SOUND'
+        }).catch(error => {
+          logger.error('音声再生メッセージの送信エラー:', error);
         });
       }
     });
+
+    // メッセージを処理したことを示すために true を返す
+    return true;
+  }
+});
+
+// タブの更新を監視
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url?.includes('chat.openai.com')) {
+    logger.log('ChatGPTタブが更新されました:', tabId);
   }
 });

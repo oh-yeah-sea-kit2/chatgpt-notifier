@@ -1,30 +1,49 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Notifier",
+  "name": "[DEV] ChatGPT Notifier",
   "version": "1.0",
   "description": "ChatGPTのレスポンスを監視して通知を送る拡張機能",
-  "permissions": ["activeTab", "scripting", "notifications", "tts", "tabs", "storage"],
-  "host_permissions": ["https://chatgpt.com/*"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "notifications",
+    "tts",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*"
+  ],
   "background": {
     "service_worker": "dist/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*"],
-      "js": ["dist/content.js"],
+      "matches": [
+        "https://chatgpt.com/*"
+      ],
+      "js": [
+        "dist/content.js"
+      ],
       "type": "module"
     }
   ],
   "action": {
-    "default_title": "Test Notification",
+    "default_title": "[DEV] ChatGPT Notifier",
     "default_popup": "popup.html",
     "default_icon": "images/icon128.png"
   },
   "icons": {
     "128": "images/icon128.png"
   },
-  "web_accessible_resources": [{
-    "resources": ["sounds/notification.wav"],
-    "matches": ["https://chatgpt.com/*"]
-  }]
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sounds/notification.wav"
+      ],
+      "matches": [
+        "https://chatgpt.com/*"
+      ]
+    }
+  ]
 }

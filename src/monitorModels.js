@@ -1,3 +1,4 @@
+import { logger } from './utils/logger';
 import { modelSelector, getTargetModels } from './selectors.js';
 
 export async function monitorModelChange(onTargetModelDetected) {
@@ -5,16 +6,16 @@ export async function monitorModelChange(onTargetModelDetected) {
   const targetModels = await getTargetModels();
 
   if (!modelElement) {
-    console.error("指定されたモデル要素が見つかりませんでした。");
+    logger.error("指定されたモデル要素が見つかりませんでした。");
     return;
   }
 
-  console.log("モデル監視開始");
+  logger.log("モデル監視開始");
 
   // 初期モデルの確認と監視開始
   const initialModel = modelElement.textContent.trim();
   if (targetModels.includes(initialModel)) {
-    console.log(`初期モデル (${initialModel}) が対象モデルに一致しました。監視を開始します。`);
+    logger.log(`初期モデル (${initialModel}) が対象モデルに一致しました。監視を開始します。`);
     onTargetModelDetected();
   }
 
@@ -24,10 +25,10 @@ export async function monitorModelChange(onTargetModelDetected) {
     const currentTargetModels = await getTargetModels();
 
     if (currentTargetModels.includes(newModel)) {
-      console.log(`モデルが変更されました: ${newModel}`);
+      logger.log(`モデルが変更されました: ${newModel}`);
       onTargetModelDetected();
     } else {
-      console.log(`モデルが変更されましたが (${newModel}) 、対象モデルに一致しません。`);
+      logger.log(`モデルが変更されましたが (${newModel}) 、対象モデルに一致しません。`);
     }
   });
 

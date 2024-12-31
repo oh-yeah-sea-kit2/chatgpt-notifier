@@ -5,6 +5,7 @@ import {
   modelSelector,
   getTargetModels
 } from './selectors.js';
+import { logger } from './utils/logger';
 
 // グローバルで監視状態を管理
 let isListenerRegistered = false;
@@ -42,7 +43,7 @@ export async function monitorButtonStates() {
         newMode === "音声モード, 送信モードを開始する" && 
         currentModel && 
         targetModels.includes(currentModel)) {
-      console.log(`状態が変更されました (${currentModel}): ストリーミングの停止 -> 音声モードまたは送信モード`);
+      logger.log(`状態が変更されました (${currentModel}): ストリーミングの停止 -> 音声モードまたは送信モード`);
       notifyUser("ChatGPT", "ChatGPTからのメッセージが届きました");
     }
 
@@ -52,12 +53,12 @@ export async function monitorButtonStates() {
 
   // 通知を送る関数
   const notifyUser = (title, message) => {
-    console.log('Content: 通知メッセージを送信:', { title, message });
+    logger.log('Content: 通知メッセージを送信:', { title, message });
     
     try {
       // 拡張機能のコンテキストが有効かチェック
       if (!chrome.runtime?.id) {
-        console.log('拡張機能のコンテキストが無効です。再読み込みが必要かもしれません。');
+        logger.log('拡張機能のコンテキストが無効です。再読み込みが必要かもしれません。');
         return;
       }
 
@@ -69,21 +70,21 @@ export async function monitorButtonStates() {
         }
       }).catch(error => {
         if (error.message.includes('Extension context invalidated')) {
-          console.log('拡張機能のコンテキストが無効になりました。');
+          logger.log('拡張機能のコンテキストが無効になりました。');
           // 必要に応じて監視を停止
           observer.disconnect();
           return;
         }
-        console.log('送信エラー:', error);
+        logger.error('送信エラー:', error);
       });
     } catch (error) {
       if (error.message.includes('Extension context invalidated')) {
-        console.log('拡張機能のコンテキストが無効になりました。');
+        logger.log('拡張機能のコンテキストが無効になりました。');
         // 必要に応じて監視を停止
         observer.disconnect();
         return;
       }
-      console.error('メッセージ送信中にエラーが発生:', error);
+      logger.error('メッセージ送信中にエラーが発生:', error);
     }
   };
 
@@ -91,13 +92,13 @@ export async function monitorButtonStates() {
   currentObserver = new MutationObserver(() => {
     try {
       if (!chrome.runtime?.id) {
-        console.log('拡張機能のコンテキストが無効です。監視を停止します。');
+        logger.log('拡張機能のコンテキストが無効です。監視を停止します。');
         currentObserver.disconnect();
         return;
       }
       checkButtonStates();
     } catch (error) {
-      console.error('監視中にエラーが発生:', error);
+      logger.error('監視中にエラーが発生:', error);
       currentObserver.disconnect();
     }
   });
@@ -120,11 +121,11 @@ export async function monitorButtonStates() {
             const audio = new Audio(chrome.runtime.getURL('sounds/notification.wav'));
             audio.volume = items.volume / 100; // 0.0 から 1.0 の範囲に変換
             audio.play().catch(error => {
-              console.error('音声再生エラー:', error);
+              logger.error('音声再生エラー:', error);
             });
           });
         } catch (error) {
-          console.error('音声初期化エラー:', error);
+          logger.error('音声初期化エラー:', error);
         }
       }
     });
