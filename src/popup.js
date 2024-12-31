@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     enableNotification: false,
     enableSound: true,
     volume: 70,
-    targetModels: ['o1', 'o1 pro'],  // デフォルトのモデル
+    targetModels: ['4o', 'o1', 'o1-mini', 'o1 pro'],  // デフォルトのモデル
     activeModels: ['o1', 'o1 pro']   // 有効なモデル
   }, (items) => {
     notificationCheckbox.checked = items.enableNotification;
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newModel = newModelInput.value.trim();
     if (newModel) {
       chrome.storage.sync.get({
-        targetModels: ['o1', 'o1 pro'],  // デフォルト値を設定
+        targetModels: ['4o', 'o1', 'o1-mini', 'o1 pro'],  // デフォルト値を設定
         activeModels: ['o1', 'o1 pro']   // デフォルト値を設定
       }, (items) => {
         if (!items.targetModels.includes(newModel)) {

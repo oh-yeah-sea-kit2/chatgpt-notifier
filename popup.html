@@ -110,14 +110,58 @@
     }
 
     .model-list {
-      margin-top: 8px;
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
     }
 
     .model-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      padding: 8px;
       margin: 4px 0;
+      background: #f8f9fa;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .model-item:hover {
+      background: #f0f1f2;
+    }
+
+    .model-checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-grow: 1;
+    }
+
+    .model-checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #10a37f;
+    }
+
+    .model-name {
+      font-size: 14px;
+      color: #444;
+    }
+
+    .delete-btn {
+      background: transparent;
+      color: #ff4444;
+      border: 1px solid #ff4444;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .delete-btn:hover {
+      background: #ff4444;
+      color: white;
     }
 
     .model-input {
@@ -125,43 +169,62 @@
       align-items: center;
       gap: 8px;
       margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
     }
 
     .model-input input[type="text"] {
       flex-grow: 1;
-      padding: 6px 8px;
+      padding: 8px 12px;
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
+      transition: all 0.2s ease;
     }
 
-    button {
+    .model-input input[type="text"]:focus {
+      outline: none;
+      border-color: #10a37f;
+      box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.1);
+    }
+
+    .add-btn {
       background: #10a37f;
       color: white;
       border: none;
-      padding: 6px 12px;
+      padding: 8px 16px;
       border-radius: 4px;
-      cursor: pointer;
       font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    button:hover {
+    .add-btn:hover {
       background: #0e906f;
     }
 
-    button:disabled {
+    .add-btn:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
 
-    .delete-btn {
-      background: #ff4444;
-      padding: 4px 8px;
-      font-size: 12px;
+    /* スクロールバーのスタイル */
+    .model-list::-webkit-scrollbar {
+      width: 8px;
     }
 
-    .delete-btn:hover {
-      background: #ee3333;
+    .model-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .model-list::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    .model-list::-webkit-scrollbar-thumb:hover {
+      background: #999;
     }
   </style>
 </head>
@@ -198,8 +261,13 @@
         <!-- モデルリストがここに動的に追加されます -->
       </div>
       <div class="model-input">
-        <input type="text" id="newModel" placeholder="モデル名を入力 (例: o1 pro)">
-        <button id="addModel">追加</button>
+        <input 
+          type="text" 
+          id="newModel" 
+          placeholder="モデル名を入力 (例: o1 pro)"
+          autocomplete="off"
+        >
+        <button id="addModel" class="add-btn">追加</button>
       </div>
     </div>
   </div>
