@@ -1,14 +1,15 @@
 {
   "scripts": {
-    "build": "cross-env NODE_ENV=production npm run generate-manifest && webpack --mode=production",
+    "build": "npm run clean && cross-env NODE_ENV=production npm run generate-manifest && webpack --mode=production && cross-env NODE_ENV=production node scripts/package.js",
     "dev": "cross-env NODE_ENV=development npm run generate-manifest && webpack --mode=development --watch",
     "clean": "rimraf dist/*",
-    "build:dev": "cross-env NODE_ENV=development npm run generate-manifest && webpack --mode=development",
+    "build:dev": "npm run clean && cross-env NODE_ENV=development npm run generate-manifest && webpack --mode=development && cross-env NODE_ENV=development node scripts/package.js",
     "generate-manifest": "node scripts/generate-manifest.js"
   },
   "devDependencies": {
     "@babel/core": "^7.x.x",
     "@babel/preset-env": "^7.x.x",
+    "archiver": "^7.0.1",
     "babel-loader": "^9.x.x",
     "cross-env": "^7.0.3",
     "rimraf": "^5.0.1",

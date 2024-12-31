@@ -2,6 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// distディレクトリが存在しない場合は作成
+const distDir = path.join(__dirname, '../dist');
+if (!fs.existsSync(distDir)) {
+  fs.mkdirSync(distDir);
+}
+
 const manifest = {
   manifest_version: 3,
   name: isDevelopment ? '[DEV] ChatGPT Notifier' : 'ChatGPT Notifier',
@@ -19,12 +25,12 @@ const manifest = {
     'https://chatgpt.com/*'
   ],
   background: {
-    service_worker: 'dist/background.js'
+    service_worker: 'background.js'
   },
   content_scripts: [
     {
       matches: ['https://chatgpt.com/*'],
-      js: ['dist/content.js'],
+      js: ['content.js'],
       type: 'module'
     }
   ],
@@ -42,10 +48,10 @@ const manifest = {
   }]
 };
 
-// プロジェクトのルートディレクトリに書き出し
+// distディレクトリに直接書き出し
 fs.writeFileSync(
-  path.join(__dirname, '../manifest.json'),
+  path.join(__dirname, '../dist/manifest.json'),
   JSON.stringify(manifest, null, 2)
 );
 
-console.log(`Manifest file generated (${isDevelopment ? 'development' : 'production'} mode)`); 
+console.log(`Manifest file generated in dist/ (${isDevelopment ? 'development' : 'production'} mode)`); 
