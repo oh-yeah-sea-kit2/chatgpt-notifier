@@ -7,128 +7,143 @@ import {
 } from './selectors.js';
 import { logger } from './utils/logger';
 
-// グローバルで監視状態を管理
 let isListenerRegistered = false;
 let currentObserver = null;
+let currentUrl = null;
+let currentMode = null;
+let targetModels = [];
+
+// 関数を先に定義
+const getCurrentMode = () => {
+  const stopButton = document.querySelector(stopButtonSelector);
+  const speechButton = document.querySelector(speechButtonSelector);
+  const sendButton = document.querySelector(sendButtonSelector);
+
+  if (stopButton) {
+    return "ストリーミングの停止";
+  } else if (speechButton || sendButton) {
+    return "音声モード, 送信モードを開始する";
+  }
+  return null;
+};
+
+const getCurrentModel = () => {
+  const modelElement = document.querySelector(modelSelector);
+  return modelElement ? modelElement.textContent.trim() : null;
+};
 
 export async function monitorButtonStates() {
-  // 既存の監視を停止
   if (currentObserver) {
     currentObserver.disconnect();
   }
 
-  let currentMode = null;
-  const targetModels = await getTargetModels();
+  // 初期設定
+  targetModels = await getTargetModels();
+  currentUrl = window.location.href;
+  currentMode = getCurrentMode();
 
-  // ボタン状態の変更を確認する関数
-  const checkButtonStates = () => {
-    const stopButton = document.querySelector(stopButtonSelector);
-    const speechButton = document.querySelector(speechButtonSelector);
-    const sendButton = document.querySelector(sendButtonSelector);
-    const modelElement = document.querySelector(modelSelector);
+  const checkButtonStates = async () => {
+    // 現在の状態を取得
+    const newMode = getCurrentMode();
+    const currentModel = getCurrentModel();
 
-    // 現在のモデルを取得
-    const currentModel = modelElement ? modelElement.textContent.trim() : null;
-
-    // 新しいモードを判定
-    let newMode = null;
-    if (stopButton) {
-      newMode = "ストリーミングの停止";
-    } else if (speechButton || sendButton) {
-      newMode = "音声モード, 送信モードを開始する";
+    // URLの変更を最初にチェック
+    if (window.location.href !== currentUrl) {
+      logger.log('URLが変更されました:', window.location.href);
+      // 状態を更新
+      currentUrl = window.location.href;
+      targetModels = await getTargetModels();
+      currentMode = newMode;
+      
+      // 新しい状態をログ
+      logger.log('新しい状態:', {
+        url: currentUrl,
+        mode: currentMode,
+        model: currentModel
+      });
+      
+      // 次のチェックサイクルまで待機するため、ここで終了
+      return;
     }
 
-    // 状態が変更され、かつtargetModelsに含まれる場合のみ通知
-    if (currentMode === "ストリーミングの停止" && 
-        newMode === "音声モード, 送信モードを開始する" && 
-        currentModel && 
-        targetModels.includes(currentModel)) {
+    // 前回の状態と比較して、意図した遷移かどうかを確認
+    const isValidTransition = 
+      currentMode === "ストリーミングの停止" && 
+      newMode === "音声モード, 送信モードを開始する" &&
+      currentModel && 
+      targetModels.includes(currentModel) &&
+      !isUrlChangeInProgress;  // URL変更中でないことを確認
+
+    if (isValidTransition) {
       logger.log(`状態が変更されました (${currentModel}): ストリーミングの停止 -> 音声モードまたは送信モード`);
-      notifyUser("ChatGPT", "ChatGPTからのメッセージが届きました");
+      await notifyUser("ChatGPT", "ChatGPTからのメッセージが届きました");
     }
 
-    // 現在のモードを更新
+    // 現在の状態を保存
     currentMode = newMode;
   };
 
-  // 通知を送る関数
-  const notifyUser = (title, message) => {
+  const notifyUser = async (title, message) => {
     logger.log('Content: 通知メッセージを送信:', { title, message });
     
     try {
-      // 拡張機能のコンテキストが有効かチェック
       if (!chrome.runtime?.id) {
-        logger.log('拡張機能のコンテキストが無効です。再読み込みが必要かもしれません。');
+        logger.log('拡張機能のコンテキストが無効です。');
         return;
       }
 
-      chrome.runtime.sendMessage({
-        type: 'SHOW_NOTIFICATION',
-        payload: {
-          title: title,
-          message: message
-        }
-      }).catch(error => {
-        if (error.message.includes('Extension context invalidated')) {
-          logger.log('拡張機能のコンテキストが無効になりました。');
-          // 必要に応じて監視を停止
-          observer.disconnect();
-          return;
-        }
-        logger.error('送信エラー:', error);
+      // 通知を送信するのみ
+      await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+          type: 'SHOW_NOTIFICATION',
+          payload: { title, message }
+        }, response => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(response);
+          }
+        });
       });
+
     } catch (error) {
       if (error.message.includes('Extension context invalidated')) {
         logger.log('拡張機能のコンテキストが無効になりました。');
-        // 必要に応じて監視を停止
-        observer.disconnect();
+        currentObserver?.disconnect();
         return;
       }
-      logger.error('メッセージ送信中にエラーが発生:', error);
+      logger.error('メッセージ送信中にエラー:', error);
     }
   };
 
-  // 新しい監視を開始
-  currentObserver = new MutationObserver(() => {
-    try {
-      if (!chrome.runtime?.id) {
-        logger.log('拡張機能のコンテキストが無効です。監視を停止します。');
-        currentObserver.disconnect();
-        return;
-      }
-      checkButtonStates();
-    } catch (error) {
-      logger.error('監視中にエラーが発生:', error);
-      currentObserver.disconnect();
-    }
+  // URL変更中かどうかを追跡するフラグ
+  let isUrlChangeInProgress = false;
+
+  // URLの変更を監視
+  window.addEventListener('beforeunload', () => {
+    isUrlChangeInProgress = true;
   });
 
-  currentObserver.observe(document.body, {
+  window.addEventListener('load', () => {
+    isUrlChangeInProgress = false;
+  });
+
+  // ボタンの状態を監視
+  const observer = new MutationObserver(() => checkButtonStates());
+  observer.observe(document.body, {
     childList: true,
     subtree: true
   });
 
-  checkButtonStates();
+  currentObserver = observer;
+  await checkButtonStates();  // 初期状態をチェック
 
-  // 音声再生のリスナーを1回だけ登録
-  if (!isListenerRegistered) {
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === 'PLAY_NOTIFICATION_SOUND') {
-        try {
-          chrome.storage.sync.get({
-            volume: 100
-          }, (items) => {
-            const audio = new Audio(chrome.runtime.getURL('sounds/notification.wav'));
-            audio.volume = items.volume / 100; // 0.0 から 1.0 の範囲に変換
-            audio.play().catch(error => {
-              logger.error('音声再生エラー:', error);
-            });
-          });
-        } catch (error) {
-          logger.error('音声初期化エラー:', error);
-        }
-      }
-    });
-    isListenerRegistered = true;
-  }
+  // 音声再生のメッセージリスナーを追加
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'PLAY_SOUND') {
+      const audio = new Audio(chrome.runtime.getURL('sounds/notification.wav'));
+      audio.volume = message.volume / 100;
+      audio.play();
+    }
+  });
 }

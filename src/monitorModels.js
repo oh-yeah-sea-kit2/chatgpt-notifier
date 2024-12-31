@@ -20,16 +20,27 @@ export async function monitorModelChange(onTargetModelDetected) {
   }
 
   // MutationObserverでモデルの変化を監視
-  const observer = new MutationObserver(async () => {
+  const observer = new MutationObserver(async (mutations, observer) => {
+    // 一時的に監視を停止
+    observer.disconnect();
+
     const newModel = modelElement.textContent.trim();
     const currentTargetModels = await getTargetModels();
 
     if (currentTargetModels.includes(newModel)) {
       logger.log(`モデルが変更されました: ${newModel}`);
-      onTargetModelDetected();
-    } else {
-      logger.log(`モデルが変更されましたが (${newModel}) 、対象モデルに一致しません。`);
+      // 少し遅延を入れて実行
+      setTimeout(() => {
+        onTargetModelDetected();
+      }, 100);
     }
+
+    // 監視を再開
+    observer.observe(modelElement, {
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
   });
 
   observer.observe(modelElement, {
