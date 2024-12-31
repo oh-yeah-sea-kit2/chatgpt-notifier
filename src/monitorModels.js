@@ -1,7 +1,8 @@
-import { modelSelector, targetModels } from './selectors.js';
+import { modelSelector, getTargetModels } from './selectors.js';
 
-export function monitorModelChange(onTargetModelDetected) {
+export async function monitorModelChange(onTargetModelDetected) {
   const modelElement = document.querySelector(modelSelector);
+  const targetModels = await getTargetModels();
 
   if (!modelElement) {
     console.error("指定されたモデル要素が見つかりませんでした。");
@@ -18,10 +19,11 @@ export function monitorModelChange(onTargetModelDetected) {
   }
 
   // MutationObserverでモデルの変化を監視
-  const observer = new MutationObserver(() => {
+  const observer = new MutationObserver(async () => {
     const newModel = modelElement.textContent.trim();
+    const currentTargetModels = await getTargetModels();
 
-    if (targetModels.includes(newModel)) {
+    if (currentTargetModels.includes(newModel)) {
       console.log(`モデルが変更されました: ${newModel}`);
       onTargetModelDetected();
     } else {

@@ -3,20 +3,21 @@ import {
   speechButtonSelector, 
   sendButtonSelector,
   modelSelector,
-  targetModels
+  getTargetModels
 } from './selectors.js';
 
 // グローバルで監視状態を管理
 let isListenerRegistered = false;
 let currentObserver = null;
 
-export function monitorButtonStates() {
+export async function monitorButtonStates() {
   // 既存の監視を停止
   if (currentObserver) {
     currentObserver.disconnect();
   }
 
   let currentMode = null;
+  const targetModels = await getTargetModels();
 
   // ボタン状態の変更を確認する関数
   const checkButtonStates = () => {
