@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "webpack": "webpack --mode=production"
+  },
+  "devDependencies": {
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  }
+}
