@@ -14,10 +14,7 @@ const manifest = {
   version: '1.0',
   description: 'ChatGPTのレスポンスを監視して通知を送る拡張機能',
   permissions: [
-    'activeTab',
-    'scripting',
     'notifications',
-    'tts',
     'tabs',
     'storage'
   ],
